@@ -29,7 +29,7 @@ export const NotOwnedSandboxInfo = observer(() => {
   const [toggleFollow, { error, data: result }] = useMutation<any, any>( // eslint-disable-line
     followTemplate,
     {
-      variables: { template: sandboxId },
+      variables: { template: customTemplate.id },
     }
   );
   const { loading, data } = useQuery(getSandboxInfo, {
@@ -42,6 +42,8 @@ export const NotOwnedSandboxInfo = observer(() => {
       data.sandbox.customTemplate.following) ||
     [];
   const isFollowing = (i: number) =>
+    (entities[i] && entities[i].isFollowing) || false;
+  const isOwner = (i: number) =>
     (entities[i] && entities[i].isFollowing) || false;
 
   const handleToggleFollow = (team?: string) => {
