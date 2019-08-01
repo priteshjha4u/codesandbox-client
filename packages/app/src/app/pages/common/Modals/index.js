@@ -46,7 +46,7 @@ const modals = {
   },
   newSandbox: {
     Component: NewSandbox,
-    width: 925,
+    width: 950,
   },
   share: {
     Component: ShareModal,

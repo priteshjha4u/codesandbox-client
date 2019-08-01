@@ -5,6 +5,7 @@ import Template from '@codesandbox/common/lib/components/Template';
 import { ImportTab } from './ImportTab';
 import { MyTemplates } from './MyTemplates';
 import { MyTemplatesTab } from './MyTemplatesTab';
+import { MyFavoriteTemplatesTab } from './MyFavoriteTemplatesTab';
 import {
   Container,
   InnerContainer,
