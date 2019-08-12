@@ -157,6 +157,7 @@ export const LIST_FOLLOWED_TEMPLATES = gql`
   query ListFollowedTemplates {
     me {
       teams {
+        id
         name
         followedTemplates {
           color
