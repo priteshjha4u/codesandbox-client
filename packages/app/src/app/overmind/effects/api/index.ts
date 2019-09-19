@@ -20,8 +20,8 @@ import {
 } from '@codesandbox/common/lib/types';
 import { TemplateType } from '@codesandbox/common/lib/templates';
 import { client } from 'app/graphql/client';
-import apiFactory, { Api, ApiConfig } from './apiFactory';
 import { LIST_TEMPLATES } from 'app/components/CreateNewSandbox/queries';
+import apiFactory, { Api, ApiConfig } from './apiFactory';
 
 let api: Api;
 

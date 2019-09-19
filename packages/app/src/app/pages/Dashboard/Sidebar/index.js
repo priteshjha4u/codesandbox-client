@@ -1,6 +1,6 @@
 import React from 'react';
 import history from 'app/utils/history';
-import { inject, observer, Observer } from 'app/componentConnectors';
+import { inject, observer } from 'app/componentConnectors';
 import { Route, withRouter } from 'react-router-dom';
 import { Query } from 'react-apollo';
 import Input from '@codesandbox/common/lib/components/Input';
@@ -58,7 +58,7 @@ class Sidebar extends React.Component {
               : undefined;
 
             return (
-              <React.Fragment>
+              <>
                 <Items style={{ marginBottom: '1rem' }}>
                   <Item
                     Icon={DashboardIcon}
@@ -87,7 +87,7 @@ class Sidebar extends React.Component {
                       return null;
                     }
 
-                    const teams = (data.me || {}).teams;
+                    const { teams } = data.me || {};
 
                     return teams.map(team => (
                       <div key={team.id}>
@@ -111,7 +111,7 @@ class Sidebar extends React.Component {
                     ));
                   }}
                 </Query>
-              </React.Fragment>
+              </>
             );
           }}
         </Route>
