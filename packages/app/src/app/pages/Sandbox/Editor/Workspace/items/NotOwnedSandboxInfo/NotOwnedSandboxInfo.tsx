@@ -3,7 +3,7 @@ import Dependencies from '../../Dependencies';
 import Files from '../../Files';
 import { Project } from '../../Project';
 import { FollowTemplateButton } from '../../Project/FollowTemplateButton';
-import WorkspaceItem from '../../WorkspaceItem';
+import { WorkspaceItem } from '../../WorkspaceItem';
 
 export const NotOwnedSandboxInfo = () => {
   const [editActions, setEditActions] = useState(null); // eslint-disable-line
