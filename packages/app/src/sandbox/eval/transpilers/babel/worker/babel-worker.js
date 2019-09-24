@@ -12,7 +12,7 @@ import dynamicCSSModules from './plugins/babel-plugin-dynamic-css-modules';
 
 import { buildWorkerError } from '../../utils/worker-error-handler';
 import getDependencies from './get-require-statements';
-import { downloadFromError } from './dynamic-download';
+import { downloadFromError, downloadPath } from './dynamic-download';
 
 import { evaluateFromPath, resetCache } from './evaluate';
 import {
@@ -85,10 +85,16 @@ async function initializeBrowserFS() {
   return new Promise(resolve => {
     BrowserFS.configure(
       {
-        fs: 'AsyncMirror',
+        fs: 'OverlayFS',
         options: {
-          sync: { fs: 'InMemory' },
-          async: { fs: 'WorkerFS', options: { worker: self } },
+          writable: { fs: 'InMemory' },
+          readable: {
+            fs: 'AsyncMirror',
+            options: {
+              sync: { fs: 'InMemory' },
+              async: { fs: 'WorkerFS', options: { worker: self } },
+            },
+          },
         },
       },
       e => {
@@ -127,6 +133,7 @@ async function installPlugin(Babel, BFSRequire, plugin, currentPath, isV7) {
   let evaluatedPlugin = null;
 
   try {
+    await downloadPath(plugin);
     evaluatedPlugin = evaluateFromPath(
       fs,
       BFSRequire,
@@ -135,21 +142,45 @@ async function installPlugin(Babel, BFSRequire, plugin, currentPath, isV7) {
       Babel.availablePlugins,
       Babel.availablePresets
     );
-  } catch (e) {
+  } catch (firstError) {
     console.warn('First time compiling ' + plugin + ' went wrong, got:');
-    console.warn(e);
-    const prefixedName = getPrefixedPluginName(plugin, isV7);
+    console.warn(firstError);
 
-    evaluatedPlugin = evaluateFromPath(
-      fs,
-      BFSRequire,
-      prefixedName,
-      currentPath,
-      Babel.availablePlugins,
-      Babel.availablePresets
-    );
+    try {
+      /** We assume that the user has the shortcode
+          react = @babel/react or styled-components = babel-plugin-styled-components
+          and try to fetch the correct plugin for them
+       */
 
-    console.log('Second try succeeded');
+      const prefixedName = getPrefixedPluginName(plugin, isV7);
+      evaluatedPlugin = evaluateFromPath(
+        fs,
+        BFSRequire,
+        prefixedName,
+        currentPath,
+        Babel.availablePlugins,
+        Babel.availablePresets
+      );
+
+      console.log('Second try succeeded');
+    } catch (secondError) {
+      console.warn('Long path also failed ' + plugin + ' went wrong, got:');
+      console.warn(secondError);
+
+      /** If we still didn't get it, this means plugin wasn't downloaded
+          and that's why it could not be resolved.
+
+          We can try to download it based on the first error
+      */
+
+      console.warn('Downloading ' + plugin);
+
+      evaluatedPlugin = await downloadFromError(firstError).then(() => {
+        console.warn('Downloaded ' + plugin);
+        resetCache();
+        return installPlugin(Babel, BFSRequire, plugin, currentPath, isV7);
+      });
+    }
   }
 
   if (!evaluatedPlugin) {
@@ -160,6 +191,8 @@ async function installPlugin(Babel, BFSRequire, plugin, currentPath, isV7) {
     plugin,
     evaluatedPlugin.default ? evaluatedPlugin.default : evaluatedPlugin
   );
+
+  return evaluatedPlugin;
 }
 
 async function installPreset(Babel, BFSRequire, preset, currentPath, isV7) {
