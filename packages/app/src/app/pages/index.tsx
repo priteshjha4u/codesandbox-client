@@ -80,7 +80,6 @@ const RoutesComponent = ({ signals: { appUnmounted } }) => {
           return null;
         }}
       />
-      // @ts-ignore
       <Toasts
         colors={{
           [NotificationStatus.ERROR]: theme.dangerBackground(),
